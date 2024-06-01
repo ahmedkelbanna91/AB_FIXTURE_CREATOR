@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.34909.67
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AB_FIXTURE_CREATOR", "AB_FIXTURE_CREATOR\AB_FIXTURE_CREATOR.vcxproj", "{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Debug|x64.ActiveCfg = Debug|x64
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Debug|x64.Build.0 = Debug|x64
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Debug|x86.ActiveCfg = Debug|Win32
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Debug|x86.Build.0 = Debug|Win32
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Release|x64.ActiveCfg = Release|x64
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Release|x64.Build.0 = Release|x64
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Release|x86.ActiveCfg = Release|Win32
+		{B9A82E16-C32A-47B1-88B6-F29E3FB6831E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {59370161-89A2-4453-8554-92A5A315D27F}
+	EndGlobalSection
+EndGlobal
