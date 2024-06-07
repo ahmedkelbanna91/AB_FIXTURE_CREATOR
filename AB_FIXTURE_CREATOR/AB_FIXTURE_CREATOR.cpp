@@ -45,16 +45,23 @@ typedef CGAL::Surface_mesh<Kernel::Point_3> Mesh;
 typedef Kernel::Point_3 Point;
 typedef Kernel::Vector_3 Vector;
 
-void resizeConsole(SHORT width, SHORT height) {
-	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-	SMALL_RECT windowSize = { 0, 0, width - 1, height - 1 }; // Minus 1 because it is zero-based
+void setConsoleSize(int width, int height) {
+	HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // Get the standard output handle
 
-	// Set the console window size
-	SetConsoleWindowInfo(hStdout, TRUE, &windowSize);
+	COORD newSize;
+	newSize.X = width;
+	newSize.Y = 32766; // Maximal possible height for the console window
+	SetConsoleScreenBufferSize(hStdout, newSize);
 
-	// Update the buffer size to at least as large as the window
-	COORD bufferSize = { static_cast<SHORT>(width), static_cast<SHORT>(height) };
-	SetConsoleScreenBufferSize(hStdout, bufferSize);
+	SMALL_RECT windowSize;
+	windowSize.Top = 0;
+	windowSize.Left = 0;
+	windowSize.Right = width - 1;  // Width of the window
+	windowSize.Bottom = height - 1;  // Height of the window
+
+	if (!SetConsoleWindowInfo(hStdout, TRUE, &windowSize)) {
+		std::cerr << "Setting console window size failed." << std::endl;
+	}
 }
 
 void get_dimensions(Mesh mesh, double& modelWidth, double& modelLength, double& modelHeight) {
@@ -131,7 +138,7 @@ void create_fixture(std::string ID_Str, Mesh Fixture_Mesh, Mesh& Result_Mesh) {
 	double XYscale = 0.18, XYtopscale = 0.18, Zscale = 0.30;
 	double zThreshold = 0.1;
 	double Xspacing = 0.8, Yspacing = 2.9;
-	double zDepth = -1.0;
+	double zDepth = -0.7;
 	Mesh Tag_Mesh;
 
 	std::transform(ID_Str.begin(), ID_Str.end(), ID_Str.begin(), [](unsigned char c) { return std::toupper(c); });
@@ -168,6 +175,7 @@ void create_fixture(std::string ID_Str, Mesh Fixture_Mesh, Mesh& Result_Mesh) {
 struct ModelType {
 	std::string FullName;
 	std::string label;
+	int initialCount;
 	int count;
 };
 
@@ -176,7 +184,7 @@ bool processModel(const std::string outputPath, int ID, const ModelType modelTyp
 	std::string Filename = id + "_F.stl";
 	std::string output = outputPath + "/" + Filename;
 
-	std::cout << "      Creating: " << Filename << " for " << modelType.FullName << std::endl;
+	std::cout << "      Creating: " << Yellow << Filename << ColorEnd << " for " << Cyan << modelType.FullName << ColorEnd << std::endl;
 
 	Mesh Fixture_Mesh, Result_Mesh;
 
@@ -233,46 +241,65 @@ void promptForNumbers(const std::string& prompt, int& outValue) {
 
 int main(int argc, char* argv[]) {
 
-	//resizeConsole(77, 30);
-	std::cout << Cyan << "=====================================================================" << ColorEnd << std::endl;
-	std::cout << Cyan << "========================" << ColorEnd 
+	setConsoleSize(73, 35);
+	std::cout << Cyan << "\n===========================" << ColorEnd 
 		<< Yellow << "'Created by Banna'" << ColorEnd
-		<< Cyan << "===========================" << ColorEnd << std::endl;
-	std::cout << Cyan << "===================" << ColorEnd 
+		<< Cyan <<		   "===========================" << ColorEnd << std::endl;
+	std::cout << Cyan <<   "======================" << ColorEnd 
 		<< Yellow << "'AB FIXTURE CREATOR TOOL V3'" << ColorEnd
-		<< Cyan<< "======================" << ColorEnd << std::endl;
-	std::cout << Cyan << "=====================================================================\n" << ColorEnd << std::endl;
+		<< Cyan<<		   "======================" << ColorEnd << std::endl;
+	std::cout << Cyan << "========================================================================\n" << ColorEnd << std::endl;
 
 
-	std::string outputPath = fs::current_path().string() + "/output";
+	
+	
+
+	int caseID;
+	promptForNumbers("      What is the Case ID? (6 Numbers)             ", caseID);
+
+	std::string outputPath = fs::current_path().string() + "/" + std::to_string(caseID);
 	if (!fs::exists(outputPath)) {
-		fs::create_directory(outputPath);
-	}
-	else {
+		if (!fs::create_directory(outputPath)) {
+			std::cout << Red << "      Failed to create output directory." << std::endl;
+			return 1;
+		}
+	} else {
 		for (const auto& entry : fs::directory_iterator(outputPath))
 			fs::remove_all(entry.path());
 	}
 
-	int caseID;
-	promptForNumbers("      What is the Case ID? ", caseID);
-
 	std::vector<ModelType> models = {
-		{"UPPER", "UN", 0}, {"UPPER PASSIVE", "UP", 0}, {"UPPER RETAINER", "UR", 0}, {"UPPER TEMPLATE", "UT", 0},
-		{"LOWER", "LN", 0}, {"LOWER PASSIVE", "LP", 0}, {"LOWER RETAINER", "LR", 0}, {"LOWER TEMPLATE", "LT", 0}
+		{"UPPER", "UN", 1, 0}, {"UPPER RETAINER", "UR", 0, 0}, 
+		{"UPPER TEMPLATE", "UT", 0, 0}, {"UPPER PASSIVE", "UP", 0, 0},
+		{"LOWER", "LN", 1, 0}, {"LOWER RETAINER", "LR", 0, 0}, 
+		{"LOWER TEMPLATE", "LT", 0, 0}, {"LOWER PASSIVE", "LP", 0, 0}
 	};
 
 	for (auto& model : models) {
-		promptForNumbers("      How many " + model.FullName + "? ", model.count);
+		if (model.FullName == "UPPER" || model.FullName == "LOWER") {
+			promptForNumbers("       How many " + model.FullName + "? (Numbers)                   ", model.count);
+		}
+
+		if (model.FullName.find("RETAINER") != std::string::npos || model.FullName.find("TEMPLATE") != std::string::npos) {
+			promptForNumbers("        > Is there " + model.FullName + "? (0 or 1)        ", model.initialCount);
+			model.initialCount = model.initialCount == 0 ? 1 : 0;
+		}
+
+		if (model.FullName.find("PASSIVE") != std::string::npos) {
+			promptForNumbers("        >> Which Step " + model.FullName + "? (Numbers)     ", model.initialCount);
+			
+			if (model.initialCount == 0) model.initialCount = 1;
+			else model.count = model.initialCount;
+		}
 	}
 
 	auto start = std::chrono::high_resolution_clock::now();
 
 	std::cout << Yellow << "\n============================'Creating Fixtures'==============================\n" << ColorEnd << std::endl;
 
-	int processedCount = 0, totalCount = 0;
+	int processedCount = 0;
 	for (const auto& model : models) {
-		totalCount += model.count;
-		for (int i = 1; i <= model.count; ++i) {
+		for (int i = model.initialCount; i <= model.count; ++i) {
 			if (processModel(outputPath, caseID, model, i)) {
 				processedCount++;
 			}
@@ -286,23 +313,18 @@ int main(int argc, char* argv[]) {
 	std::cout << Yellow <<   "=================================='REPORT'===================================\n" << ColorEnd << std::endl;
 
 
-
-	std::cout << "      " << Green << processedCount << "/" << totalCount << ColorEnd
-		<< "  OCR fixture created " << Green << "Successfully\n" << ColorEnd << std::endl;
-
 	std::cout << "      " << Green << processedCount << ColorEnd 
-		<< "  STL in 'output' - Fixture with OCR Tag\n" << std::endl;
-
+		<< "  Fixtures STL in 'output' " << Green << "with OCR Tag" << ColorEnd << std::endl;
+	std::cout << std::endl;
 	displayUserName();
 
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
+	std::cout << Yellow << "      Elapsed time: " << elapsed.count() << " seconds" << ColorEnd << std::endl;
 
-	std::cout << Yellow << "\n      Elapsed time: " << elapsed.count() << " seconds" << ColorEnd << std::endl;
-
-
-
-	std::cout << "\nPress " << Green << "ENTER" << ColorEnd << " key to exit . . . " << std::endl;
+	std::cout << std::endl;
+	std::cout << std::endl;
+	std::cout << "      Press " << Green << "ENTER" << ColorEnd << " key to exit . . . " << std::endl;
 	std::cin.get();
 	return EXIT_SUCCESS;
 }

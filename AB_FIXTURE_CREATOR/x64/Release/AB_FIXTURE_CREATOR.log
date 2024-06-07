@@ -1,8 +1,8 @@
 ﻿  AB_FIXTURE_CREATOR.cpp
   Generating code
   Previous IPDB and IOBJ mismatch, fall back to full compilation.
-  All 15804 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 15808 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
-  AB_FIXTURE_CREATOR.vcxproj -> C:\Users\Banna-Desktop\Desktop\dev\AB_FIXTURE_CREATOR\x64\Release\AB_FIXTURE_CREATOR.exe
+  AB_FIXTURE_CREATOR.vcxproj -> C:\Users\Banna-Desktop\Desktop\dev\AB_FIXTURE_CREATOR\Release\AB_FIXTURE_CREATOR.exe
   'pwsh.exe' is not recognized as an internal or external command,
   operable program or batch file.
